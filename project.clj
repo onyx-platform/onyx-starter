@@ -6,4 +6,5 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/core.async "0.1.303.0-886421-alpha"]
                  [com.mdrogalis/onyx "0.3.0-SNAPSHOT"]
-                 [com.mdrogalis/onyx-core-async "0.3.0-SNAPSHOT"]])
+                 [com.mdrogalis/onyx-core-async "0.3.0-SNAPSHOT"]]
+  :main onyx-starter.core)
