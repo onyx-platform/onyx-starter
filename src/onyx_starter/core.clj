@@ -4,6 +4,7 @@
             [onyx.plugin.core-async]
             [onyx.api]))
 
+;;;;; Implementation functions ;;;;;
 (defn split-by-spaces-impl [s]
   (clojure.string/split s #"\s+"))
 
@@ -18,9 +19,9 @@
 (defn question-impl [s]
   (str s "?"))
 
+;;;;; Destructuring functions ;;;;;
 (defn split-by-spaces [segment]
-  (map (fn [word] {:word word})
-       (split-by-spaces-impl (:sentence segment))))
+  (map (fn [word] {:word word}) (split-by-spaces-impl (:sentence segment))))
 
 (defn mixed-case [segment]
   {:word (mixed-case-impl (:word segment))})
@@ -30,6 +31,18 @@
 
 (defn question [segment]
   {:word (question-impl (:word segment))})
+
+;;;;; Configuration ;;;;;
+
+;;;            input
+;;;              |
+;;;       split-by-spaces
+;;;              |
+;;;          mixed-case
+;;;            /    \
+;;;         loud     question
+;;;           |         |
+;;;    loud-output    question-output
 
 (def workflow
   {:input
@@ -46,6 +59,8 @@
 
 (def question-output-chan (chan capacity))
 
+;;; Inject the channels needed by the core.async plugin for each
+;;; input and output.
 (defmethod l-ext/inject-lifecycle-resources :input
   [_ _] {:core-async/in-chan input-chan})
 
@@ -106,12 +121,15 @@
     :onyx/batch-size batch-size
     :onyx/doc "Writes segments to a core.async channel"}])
 
+;;; Input data to pipe into the input channel, plus the
+;;; sentinel to signal the end of input.
 (def input-segments
   [{:sentence "Hey there user"}
    {:sentence "It's really nice outside"}
    {:sentence "I live in Redmond"}
    :done])
 
+;;; Put the data onto the input chan
 (doseq [segment input-segments]
   (>!! input-chan segment))
 
@@ -120,11 +138,11 @@
 (def id (java.util.UUID/randomUUID))
 
 (def coord-opts
-  {:hornetq/mode :vm
+  {:hornetq/mode :vm ;; Run HornetQ inside the VM for convenience
    :hornetq/server? true
    :hornetq.server/type :vm
    :zookeeper/address "127.0.0.1:2185"
-   :zookeeper/server? true
+   :zookeeper/server? true ;; Run ZK inside the VM for convenience
    :zookeeper.server/port 2185
    :onyx/id id
    :onyx.coordinator/revoke-delay 5000})
@@ -134,8 +152,10 @@
    :zookeeper/address "127.0.0.1:2185"
    :onyx/id id})
 
+;; Connect to the coordinator. Also boots up in the in-memory services.
 (def conn (onyx.api/connect :memory coord-opts))
 
+;; Start the worker peers.
 (def v-peers (onyx.api/start-peers conn 1 peer-opts))
 
 (onyx.api/submit-job conn {:catalog catalog :workflow workflow})
