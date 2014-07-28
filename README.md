@@ -12,8 +12,9 @@ A starter project to get your feet wet with Onyx.
 
 `lein run`
 
-##### Expected output
+Tail `onyx.log` for Onyx output.
 
+##### Expected output
 
 ```clojure
 ({:word "HeY!"}
