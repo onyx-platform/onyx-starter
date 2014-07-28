@@ -12,6 +12,35 @@ A starter project to get your feet wet with Onyx.
 
 `lein run`
 
+##### Expected output
+
+
+```clojure
+({:word "HeY!"}
+ {:word "ThErE!"}
+ {:word "UsEr!"}
+ {:word "It's!"}
+ {:word "ReAlLy!"}
+ {:word "NiCe!"}
+ {:word "OuTsIdE!"}
+ {:word "I!"}
+ {:word "LiVe!"}
+ {:word "In!"}
+ {:word "ReDmOnD!"})
+({:word "HeY?"}
+ {:word "ThErE?"}
+ {:word "UsEr?"}
+ {:word "It's?"}
+ {:word "ReAlLy?"}
+ {:word "NiCe?"}
+ {:word "OuTsIdE?"}
+ {:word "I?"}
+ {:word "LiVe?"}
+ {:word "In?"}
+ {:word "ReDmOnD?"})
+Done!
+```
+
 ## License
 
 Copyright © 2014 Michael Drogalis

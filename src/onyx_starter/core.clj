@@ -140,7 +140,8 @@
 
 (onyx.api/submit-job conn {:catalog catalog :workflow workflow})
 
-;;; Iterate 11 times, since there's 11 words in the 3 sentences above.
+  ;; Iterate 11 times, since there's 11 words in the 3 sentences above.
+  
 
 (def loud-results (doall (map (fn [_] (<!! loud-output-chan)) (range 11))))
 
@@ -156,5 +157,7 @@
 (onyx.api/shutdown conn)
 
 (defn -main [& args]
+  ;; Invoking main executes the above, so we're instantly done by time
+  ;; we get here.
   (println "Done!"))
 
