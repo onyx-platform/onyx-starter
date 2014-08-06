@@ -10,9 +10,7 @@ A starter project to get your feet wet with Onyx. Uses the core.async plugin for
 
 ##### Run the sample
 
-`lein run`
-
-Tail `onyx.log` for Onyx output.
+Evaluate it bit-by-bit in the repl. Tail `onyx.log` for Onyx output.
 
 ##### Expected output
 

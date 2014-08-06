@@ -176,8 +176,3 @@
 
 (onyx.api/shutdown conn)
 
-(defn -main [& args]
-  ;; Invoking main executes the above, so we're instantly done by time
-  ;; we get here.
-  (println "Done!"))
-
