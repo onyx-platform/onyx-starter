@@ -160,10 +160,18 @@
 
 (onyx.api/submit-job conn {:catalog catalog :workflow workflow})
 
-;; Iterate 11 times, since there's 11 words in the 3 sentences above.
-(def loud-results (doall (map (fn [_] (<!! loud-output-chan)) (range 11))))
+;; A little utility to read from the channel until :done
+(defn take-segments! [ch]
+  (loop [x []]
+    (let [segment (<!! ch)]
+      (let [stack (conj x segment)]
+        (if-not (= segment :done)
+          (recur stack)
+          stack)))))
 
-(def question-results (doall (map (fn [_] (<!! question-output-chan)) (range 11))))
+(def loud-results (take-segments! loud-output-chan))
+
+(def question-results (take-segments! question-output-chan))
 
 (clojure.pprint/pprint loud-results)
 
