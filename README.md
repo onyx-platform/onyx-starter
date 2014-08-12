@@ -15,7 +15,7 @@ Evaluate it bit-by-bit in the repl. Tail `onyx.log` for Onyx output.
 ##### Expected output
 
 ```clojure
-({:word "HeY!"}
+[{:word "HeY!"}
  {:word "ThErE!"}
  {:word "UsEr!"}
  {:word "It's!"}
@@ -25,9 +25,10 @@ Evaluate it bit-by-bit in the repl. Tail `onyx.log` for Onyx output.
  {:word "I!"}
  {:word "LiVe!"}
  {:word "In!"}
- {:word "ReDmOnD!"})
+ {:word "ReDmOnD!"}
+ :done]
 
-({:word "HeY?"}
+[{:word "HeY?"}
  {:word "ThErE?"}
  {:word "UsEr?"}
  {:word "It's?"}
@@ -37,8 +38,8 @@ Evaluate it bit-by-bit in the repl. Tail `onyx.log` for Onyx output.
  {:word "I?"}
  {:word "LiVe?"}
  {:word "In?"}
- {:word "ReDmOnD?"})
-Done!
+ {:word "ReDmOnD?"}
+ :done]
 ```
 
 ## License
