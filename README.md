@@ -2,6 +2,10 @@
 
 A starter project to get your feet wet with Onyx. Uses the core.async plugin for both input and output. Requires no external dependencies.
 
+## Walk Through
+
+[This Gist](https://gist.github.com/MichaelDrogalis/bc620a7617396704125b) walks through the repository in detail.
+
 ## Usage
 
 ##### Clone the repo
