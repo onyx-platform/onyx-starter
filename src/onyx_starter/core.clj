@@ -45,11 +45,12 @@
 ;;;    loud-output    question-output
 
 (def workflow
-  {:input
-   {:split-by-spaces
-    {:mixed-case
-     {:loud :loud-output
-      :question :question-output}}}})
+  [[:input :split-by-spaces]
+   [:split-by-spaces :mixed-case]
+   [:mixed-case :loud]
+   [:mixed-case :question]
+   [:loud :loud-output]
+   [:question :question-output]])
 
 (def capacity 1000)
 
@@ -77,31 +78,31 @@
     :onyx/ident :core.async/read-from-chan
     :onyx/type :input
     :onyx/medium :core.async
-    :onyx/consumption :concurrent
+    :onyx/consumption :sequential
     :onyx/batch-size batch-size
     :onyx/doc "Reads segments from a core.async channel"}
 
    {:onyx/name :split-by-spaces
     :onyx/fn :onyx-starter.core/split-by-spaces
-    :onyx/type :transformer
+    :onyx/type :function
     :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :mixed-case
     :onyx/fn :onyx-starter.core/mixed-case
-    :onyx/type :transformer
+    :onyx/type :function
     :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :loud
     :onyx/fn :onyx-starter.core/loud
-    :onyx/type :transformer
+    :onyx/type :function
     :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :question
     :onyx/fn :onyx-starter.core/question
-    :onyx/type :transformer
+    :onyx/type :function
     :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
@@ -109,7 +110,7 @@
     :onyx/ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
-    :onyx/consumption :concurrent
+    :onyx/consumption :sequential
     :onyx/batch-size batch-size
     :onyx/doc "Writes segments to a core.async channel"}
 
@@ -117,7 +118,7 @@
     :onyx/ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
-    :onyx/consumption :concurrent
+    :onyx/consumption :sequential
     :onyx/batch-size batch-size
     :onyx/doc "Writes segments to a core.async channel"}])
 
