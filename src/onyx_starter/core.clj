@@ -161,18 +161,9 @@
 
 (onyx.api/submit-job conn {:catalog catalog :workflow workflow})
 
-;; A little utility to read from the channel until :done
-(defn take-segments! [ch]
-  (loop [x []]
-    (let [segment (<!! ch)]
-      (let [stack (conj x segment)]
-        (if-not (= segment :done)
-          (recur stack)
-          stack)))))
+(def loud-results (onyx.plugin.core-async/take-segments! loud-output-chan))
 
-(def loud-results (take-segments! loud-output-chan))
-
-(def question-results (take-segments! question-output-chan))
+(def question-results (onyx.plugin.core-async/take-segments! question-output-chan))
 
 (clojure.pprint/pprint loud-results)
 
