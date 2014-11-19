@@ -34,7 +34,7 @@
 
 ;;;;; Configuration ;;;;;
 
-;;;            input
+;;;             in
 ;;;              |
 ;;;       split-by-spaces
 ;;;              |
@@ -45,7 +45,7 @@
 ;;;    loud-output    question-output
 
 (def workflow
-  [[:input :split-by-spaces]
+  [[:in :split-by-spaces]
    [:split-by-spaces :mixed-case]
    [:mixed-case :loud]
    [:mixed-case :question]
@@ -74,7 +74,7 @@
 (def batch-size 10)
 
 (def catalog
-  [{:onyx/name :input
+  [{:onyx/name :in
     :onyx/ident :core.async/read-from-chan
     :onyx/type :input
     :onyx/medium :core.async
