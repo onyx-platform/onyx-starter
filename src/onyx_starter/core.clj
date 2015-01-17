@@ -138,28 +138,34 @@
 
 (def id (java.util.UUID/randomUUID))
 
-(def coord-opts
-  {:hornetq/mode :vm ;; Run HornetQ inside the VM for convenience
-   :hornetq/server? true
-   :hornetq.server/type :vm
-   :zookeeper/address "127.0.0.1:2185"
-   :zookeeper/server? true ;; Run ZK inside the VM for convenience
-   :zookeeper.server/port 2185
-   :onyx/id id
-   :onyx.coordinator/revoke-delay 5000})
+;; Use the Round Robin job scheduler
+(def scheduler :onyx.job-scheduler/round-robin)
 
-(def peer-opts
+(def env-config
   {:hornetq/mode :vm
-   :zookeeper/address "127.0.0.1:2185"
-   :onyx/id id})
+   :hornetq.server/type :vm
+   :hornetq/server? true
+   :zookeeper/address "127.0.0.1:2186"
+   :zookeeper/server? true
+   :zookeeper.server/port 2186
+   :onyx/id id
+   :onyx.peer/job-scheduler scheduler})
 
-;; Connect to the coordinator. Also boots up in the in-memory services.
-(def conn (onyx.api/connect :memory coord-opts))
+(def peer-config
+  {:hornetq/mode :vm
+   :zookeeper/address "127.0.0.1:2186"
+   :onyx/id id
+   :onyx.peer/job-scheduler scheduler})
+
+;; Start an in-memory ZooKeeper and HornetQ
+(def env (onyx.api/start-env env-config))
 
 ;; Start the worker peers.
-(def v-peers (onyx.api/start-peers conn 1 peer-opts))
+(def v-peers (onyx.api/start-peers! 1 peer-config))
 
-(onyx.api/submit-job conn {:catalog catalog :workflow workflow})
+(onyx.api/submit-job peer-config
+                     {:catalog catalog :workflow workflow
+                      :task-scheduler :onyx.task-scheduler/round-robin})
 
 (def loud-results (onyx.plugin.core-async/take-segments! loud-output-chan))
 
@@ -172,7 +178,7 @@
 (clojure.pprint/pprint question-results)
 
 (doseq [v-peer v-peers]
-  ((:shutdown-fn v-peer)))
+  (onyx.api/shutdown-peer v-peer))
 
-(onyx.api/shutdown conn)
+(onyx.api/shutdown-env env)
 
