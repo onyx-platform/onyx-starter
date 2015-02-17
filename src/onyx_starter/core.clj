@@ -141,10 +141,27 @@
 ;; Use the Round Robin job scheduler
 (def scheduler :onyx.job-scheduler/round-robin)
 
+; (def env-config
+;   {:hornetq/mode :vm
+;    :hornetq.server/type :vm
+;    :hornetq/server? true
+;    :zookeeper/address "127.0.0.1:2186"
+;    :zookeeper/server? true
+;    :zookeeper.server/port 2186
+;    :onyx/id id
+;    :onyx.peer/job-scheduler scheduler})
+
+; (def peer-config
+;   {:hornetq/mode :vm
+;    :zookeeper/address "127.0.0.1:2186"
+;    :onyx/id id
+;    :onyx.peer/job-scheduler scheduler})
+
 (def env-config
-  {:hornetq/mode :vm
-   :hornetq.server/type :vm
-   :hornetq/server? true
+  {:hornetq/mode :standalone
+   :hornetq.standalone/host "127.0.0.1"
+   :hornetq.standalone/port 5445
+   :hornetq/server? false
    :zookeeper/address "127.0.0.1:2186"
    :zookeeper/server? true
    :zookeeper.server/port 2186
@@ -152,12 +169,14 @@
    :onyx.peer/job-scheduler scheduler})
 
 (def peer-config
-  {:hornetq/mode :vm
+  {:hornetq/mode :standalone
+   :hornetq.standalone/host "127.0.0.1"
+   :hornetq.standalone/port 5445
    :zookeeper/address "127.0.0.1:2186"
    :onyx/id id
    :onyx.peer/job-scheduler scheduler})
 
-;; Start an in-memory ZooKeeper and HornetQ
+;; Start an in-memory ZooKeeper and standalone HornetQ
 (def env (onyx.api/start-env env-config))
 
 ;; Start the worker peers.
@@ -177,8 +196,9 @@
 
 (clojure.pprint/pprint question-results)
 
+(Thread/sleep 120000)
+
 (doseq [v-peer v-peers]
   (onyx.api/shutdown-peer v-peer))
 
 (onyx.api/shutdown-env env)
-
