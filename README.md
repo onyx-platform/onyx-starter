@@ -4,7 +4,7 @@ A starter project to get your feet wet with Onyx `0.5.2`. Uses the core.async pl
 
 ## Walk Through
 
-[This Gist](https://gist.github.com/MichaelDrogalis/bc620a7617396704125b) walks through the repository in detail.
+[WALKTHROUGH.md](WALKTHROUGH.md) walks through the repository in detail.
 
 ## Usage
 
