@@ -193,8 +193,6 @@
 
 (clojure.pprint/pprint question-results)
 
-(Thread/sleep 120000)
-
 (doseq [v-peer v-peers]
   (onyx.api/shutdown-peer v-peer))
 

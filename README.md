@@ -59,16 +59,23 @@ As the dashboard is unable to use VM mode HornetQ, you will have to run a standa
 2. ./setup-hq.sh
 3. ./run-hq.sh
 
-In core.clj, alter the line:
+In core.clj, modify the line:
 `(def vm-hornetq? true)` 
 to 
 `(def vm-hornetq?  false)`.  
+
 Then evaluate the sample file bit by bit, as above.
-After the line: 
+
+After evaluating the line: 
 `(def env (onyx.api/start-env env-config))`
 start the dashboard by:
 
-INSERT JAR RUNNING HERE.
+`ZOOKEEPER_ADDR="127.0.0.1:2186" HORNETQ_HOST="127.0.0.1" HORNETQ_PORT=5445 java -jar onyx-dashboard-VERSION-NUMBER.jar`
+
+Make sure to replace VERSION-NUMBER with the version of the jar you have
+downloaded.  Then continue evaluating the core.clj forms. After evaluating the
+shutdown-env line, the dashboard will be unable to operate (there will be no
+running ZooKeeper instance) and you will need to restart it.
 
 ## License
 
