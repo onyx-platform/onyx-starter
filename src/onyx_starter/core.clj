@@ -4,6 +4,8 @@
             [onyx.plugin.core-async]
             [onyx.api]))
 
+(def vm-hornetq? true)
+
 ;;;;; Implementation functions ;;;;;
 (defn split-by-spaces-impl [s]
   (clojure.string/split s #"\s+"))
@@ -141,23 +143,37 @@
 ;; Use the Round Robin job scheduler
 (def scheduler :onyx.job-scheduler/round-robin)
 
+(def env-hornetq-config 
+  (if vm-hornetq? 
+    {:hornetq/mode :vm
+     :hornetq.server/type :vm
+     :hornetq/server? true}
+    {:hornetq/mode :standalone
+     :hornetq.standalone/host "127.0.0.1"
+     :hornetq.standalone/port 5445}))
+
+(def peer-hornetq-config
+  (if vm-hornetq?
+    {:hornetq/mode :vm}
+    {:hornetq/mode :standalone
+     :hornetq.standalone/host "127.0.0.1"
+     :hornetq.standalone/port 5445}))
+
 (def env-config
-  {:hornetq/mode :vm
-   :hornetq.server/type :vm
-   :hornetq/server? true
-   :zookeeper/address "127.0.0.1:2186"
-   :zookeeper/server? true
-   :zookeeper.server/port 2186
-   :onyx/id id
-   :onyx.peer/job-scheduler scheduler})
+  (merge {:zookeeper/address "127.0.0.1:2186"
+          :zookeeper/server? true
+          :zookeeper.server/port 2186
+          :onyx/id id
+          :onyx.peer/job-scheduler scheduler}
+         env-hornetq-config))
 
 (def peer-config
-  {:hornetq/mode :vm
-   :zookeeper/address "127.0.0.1:2186"
-   :onyx/id id
-   :onyx.peer/job-scheduler scheduler})
+  (merge {:zookeeper/address "127.0.0.1:2186"
+          :onyx/id id
+          :onyx.peer/job-scheduler scheduler}
+         peer-hornetq-config))
 
-;; Start an in-memory ZooKeeper and HornetQ
+;; Start an in-memory ZooKeeper and HornetQ (depending on vm-hornetq?)
 (def env (onyx.api/start-env env-config))
 
 ;; Start the worker peers.
@@ -181,4 +197,3 @@
   (onyx.api/shutdown-peer v-peer))
 
 (onyx.api/shutdown-env env)
-
