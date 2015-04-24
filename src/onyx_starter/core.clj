@@ -1,10 +1,8 @@
 (ns onyx-starter.core
   (:require [clojure.core.async :refer [chan >!! <!! close!]]
             [onyx.peer.task-lifecycle-extensions :as l-ext]
-            [onyx.plugin.core-async]
+            [onyx.plugin.core-async :refer [take-segments!]]
             [onyx.api]))
-
-(def vm-hornetq? true)
 
 ;;;;; Implementation functions ;;;;;
 (defn split-by-spaces-impl [s]
@@ -64,14 +62,14 @@
 
 ;;; Inject the channels needed by the core.async plugin for each
 ;;; input and output.
-(defmethod l-ext/inject-lifecycle-resources :input
-  [_ _] {:core-async/in-chan input-chan})
+(defmethod l-ext/inject-lifecycle-resources :in
+  [_ _] {:core.async/chan input-chan})
 
 (defmethod l-ext/inject-lifecycle-resources :loud-output
-  [_ _] {:core-async/out-chan loud-output-chan})
+  [_ _] {:core.async/chan loud-output-chan})
 
 (defmethod l-ext/inject-lifecycle-resources :question-output
-  [_ _] {:core-async/out-chan question-output-chan})
+  [_ _] {:core.async/chan question-output-chan})
 
 (def batch-size 10)
 
@@ -80,39 +78,35 @@
     :onyx/ident :core.async/read-from-chan
     :onyx/type :input
     :onyx/medium :core.async
-    :onyx/consumption :sequential
+    :onyx/max-peers 1
     :onyx/batch-size batch-size
     :onyx/doc "Reads segments from a core.async channel"}
 
    {:onyx/name :split-by-spaces
     :onyx/fn :onyx-starter.core/split-by-spaces
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :mixed-case
     :onyx/fn :onyx-starter.core/mixed-case
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :loud
     :onyx/fn :onyx-starter.core/loud
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :question
     :onyx/fn :onyx-starter.core/question
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :loud-output
     :onyx/ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
-    :onyx/consumption :sequential
+    :onyx/max-peers 1
     :onyx/batch-size batch-size
     :onyx/doc "Writes segments to a core.async channel"}
 
@@ -120,7 +114,7 @@
     :onyx/ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
-    :onyx/consumption :sequential
+    :onyx/max-peers 1
     :onyx/batch-size batch-size
     :onyx/doc "Writes segments to a core.async channel"}])
 
@@ -140,48 +134,34 @@
 
 (def id (java.util.UUID/randomUUID))
 
-;; Use the Round Robin job scheduler
-(def scheduler :onyx.job-scheduler/round-robin)
-
-(def env-hornetq-config 
-  (if vm-hornetq? 
-    {:hornetq/mode :vm
-     :hornetq.server/type :vm
-     :hornetq/server? true}
-    {:hornetq/mode :standalone
-     :hornetq.standalone/host "127.0.0.1"
-     :hornetq.standalone/port 5445}))
-
-(def peer-hornetq-config
-  (if vm-hornetq?
-    {:hornetq/mode :vm}
-    {:hornetq/mode :standalone
-     :hornetq.standalone/host "127.0.0.1"
-     :hornetq.standalone/port 5445}))
-
 (def env-config
-  (merge {:zookeeper/address "127.0.0.1:2186"
-          :zookeeper/server? true
-          :zookeeper.server/port 2186
-          :onyx/id id
-          :onyx.peer/job-scheduler scheduler}
-         env-hornetq-config))
+  {:zookeeper/address "127.0.0.1:2188"
+   :zookeeper/server? true
+   :zookeeper.server/port 2188
+   :onyx/id id})
 
 (def peer-config
-  (merge {:zookeeper/address "127.0.0.1:2186"
-          :onyx/id id
-          :onyx.peer/job-scheduler scheduler}
-         peer-hornetq-config))
+  {:zookeeper/address "127.0.0.1:2188"
+   :onyx/id id
+   :onyx.peer/job-scheduler :onyx.job-scheduler/balanced
+   :onyx.messaging/impl :core.async
+   :onyx.messaging/bind-addr "localhost"})
 
 ;; Start an in-memory ZooKeeper and HornetQ (depending on vm-hornetq?)
 (def env (onyx.api/start-env env-config))
 
+;; Start a peer group to share resources.
+(def peer-group (onyx.api/start-peer-group peer-config))
+
+;; We need at least one peer per task.
+(def n-peers (count (set (mapcat identity workflow))))
+
 ;; Start the worker peers.
-(def v-peers (onyx.api/start-peers! 1 peer-config))
+(def v-peers (onyx.api/start-peers n-peers peer-group))
 
 (onyx.api/submit-job peer-config
                      {:catalog catalog :workflow workflow
-                      :task-scheduler :onyx.task-scheduler/round-robin})
+                      :task-scheduler :onyx.task-scheduler/balanced})
 
 (def loud-results (onyx.plugin.core-async/take-segments! loud-output-chan))
 
@@ -195,5 +175,7 @@
 
 (doseq [v-peer v-peers]
   (onyx.api/shutdown-peer v-peer))
+
+(onyx.api/shutdown-peer-group peer-group)
 
 (onyx.api/shutdown-env env)
