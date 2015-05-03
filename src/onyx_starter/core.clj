@@ -1,6 +1,5 @@
 (ns onyx-starter.core
   (:require [clojure.core.async :refer [chan >!! <!! close!]]
-            [onyx.peer.task-lifecycle-extensions :as l-ext]
             [onyx.plugin.core-async :refer [take-segments!]]
             [onyx.api]))
 
@@ -59,17 +58,6 @@
 (def loud-output-chan (chan capacity))
 
 (def question-output-chan (chan capacity))
-
-;;; Inject the channels needed by the core.async plugin for each
-;;; input and output.
-(defmethod l-ext/inject-lifecycle-resources :in
-  [_ _] {:core.async/chan input-chan})
-
-(defmethod l-ext/inject-lifecycle-resources :loud-output
-  [_ _] {:core.async/chan loud-output-chan})
-
-(defmethod l-ext/inject-lifecycle-resources :question-output
-  [_ _] {:core.async/chan question-output-chan})
 
 (def batch-size 10)
 
@@ -132,6 +120,42 @@
 
 (close! input-chan)
 
+;;; Inject the channels needed by the core.async plugin for each
+;;; input and output.
+(defn inject-input-ch [event lifecycle]
+  {:core.async/chan input-chan})
+
+(defn inject-loud-output-ch [event lifecycle]
+  {:core.async/chan loud-output-chan})
+
+(defn inject-question-output-ch [event lifecycle]
+  {:core.async/chan question-output-chan})
+
+(def input-calls
+  {:lifecycle/before-task inject-input-ch})
+
+(def loud-output-calls
+  {:lifecycle/before-task inject-loud-output-ch})
+
+(def question-output-calls
+  {:lifecycle/before-task inject-question-output-ch})
+
+(def lifecycles
+  [{:lifecycle/task :in
+    :lifecycle/calls :onyx-starter.core/input-calls}
+   {:lifecycle/task :in
+    :lifecycle/calls :onyx.plugin.core-async/reader-calls}
+
+   {:lifecycle/task :loud-output
+    :lifecycle/calls :onyx-starter.core/loud-output-calls}
+   {:lifecycle/task :loud-output
+    :lifecycle/calls :onyx.plugin.core-async/writer-calls}
+
+   {:lifecycle/task :question-output
+    :lifecycle/calls :onyx-starter.core/question-output-calls}
+   {:lifecycle/task :question-output
+    :lifecycle/calls :onyx.plugin.core-async/writer-calls}])
+
 (def id (java.util.UUID/randomUUID))
 
 (def env-config
@@ -159,9 +183,10 @@
 ;; Start the worker peers.
 (def v-peers (onyx.api/start-peers n-peers peer-group))
 
-(onyx.api/submit-job peer-config
-                     {:catalog catalog :workflow workflow
-                      :task-scheduler :onyx.task-scheduler/balanced})
+(onyx.api/submit-job
+ peer-config
+ {:catalog catalog :workflow workflow :lifecycles lifecycles
+  :task-scheduler :onyx.task-scheduler/balanced})
 
 (def loud-results (onyx.plugin.core-async/take-segments! loud-output-chan))
 
