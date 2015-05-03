@@ -147,7 +147,7 @@
    :onyx.messaging/impl :core.async
    :onyx.messaging/bind-addr "localhost"})
 
-;; Start an in-memory ZooKeeper and HornetQ (depending on vm-hornetq?)
+;; Start an in-memory ZooKeeper
 (def env (onyx.api/start-env env-config))
 
 ;; Start a peer group to share resources.
