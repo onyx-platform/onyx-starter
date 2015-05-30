@@ -1,6 +1,6 @@
 ### The Anatomy of an Onyx Program
 
-In this tutorial, we'll take an in-depth view of what's happening when you execute a simple Onyx program. All of the code can be found in the [Onyx Starter repository](https://github.com/MichaelDrogalis/onyx-starter) if you'd like to follow along. The code uses the development environment with HornetQ and ZooKeeper running in memory, so you don't need additional dependencies to run the example for yourself on your machine.
+In this tutorial, we'll take an in-depth view of what's happening when you execute a simple Onyx program. All of the code can be found in the [Onyx Starter repository](https://github.com/onyx-platform/onyx-starter) if you'd like to follow along. The code uses the development environment with ZooKeeper running in memory, so you don't need additional dependencies to run the example for yourself on your machine.
 
 #### The Workflow
 
@@ -23,17 +23,6 @@ A few things to note:
 All of this is expressed in Clojure as the following form:
 
 ```clojure
-(def workflow
-  {:in
-   {:split-by-spaces
-    {:mixed-case
-     {:loud :loud-output
-      :question :question-output}}}})
-```
-
-Or, starting in `0.4.0`, you can express it as a directed, acylic graph:
-
-```clojure
 [[:in :split-by-spaces]
  [:split-by-spaces :mixed-case]
  [:mixed-case :loud]
@@ -41,8 +30,6 @@ Or, starting in `0.4.0`, you can express it as a directed, acylic graph:
  [:loud :loud-output]
  [:question :question-output]]
 ```
-
-The latter style allows data paths to merge back together, whereas the former is more clear for strictly outward branching data flows.
 
 #### The Catalog
 
@@ -55,7 +42,7 @@ Now that we've outlined the flow of data for our program in the workflow, let's 
  :onyx/ident :core.async/read-from-chan
  :onyx/type :input
  :onyx/medium :core.async
- :onyx/consumption :sequential
+ :onyx/max-peers 1
  :onyx/batch-size batch-size
  :onyx/doc "Reads segments from a core.async channel"}
 ```
@@ -68,7 +55,6 @@ The first entry in the catalog specifies the input for the workflow. Here, we ma
 {:onyx/name :split-by-spaces
  :onyx/fn :onyx-starter.core/split-by-spaces
  :onyx/type :function
- :onyx/consumption :concurrent
  :onyx/batch-size batch-size}
 ```
 
@@ -81,7 +67,7 @@ Now we turn our attention to the `split-by-spaces` function. Again, the name cor
  :onyx/ident :core.async/write-to-chan
  :onyx/type :output
  :onyx/medium :core.async
- :onyx/consumption :sequential
+ :onyx/max-peers 1
  :onyx/batch-size batch-size
  :onyx/doc "Writes segments to a core.async channel"}
 ```
@@ -98,39 +84,35 @@ For reference, here's the full catalog:
     :onyx/ident :core.async/read-from-chan
     :onyx/type :input
     :onyx/medium :core.async
-    :onyx/consumption :sequential
+    :onyx/max-peers 1
     :onyx/batch-size batch-size
     :onyx/doc "Reads segments from a core.async channel"}
 
    {:onyx/name :split-by-spaces
     :onyx/fn :onyx-starter.core/split-by-spaces
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :mixed-case
     :onyx/fn :onyx-starter.core/mixed-case
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :loud
     :onyx/fn :onyx-starter.core/loud
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :question
     :onyx/fn :onyx-starter.core/question
     :onyx/type :function
-    :onyx/consumption :concurrent
     :onyx/batch-size batch-size}
 
    {:onyx/name :loud-output
     :onyx/ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
-    :onyx/consumption :sequential
+    :onyx/max-peers 1
     :onyx/batch-size batch-size
     :onyx/doc "Writes segments to a core.async channel"}
 
@@ -138,7 +120,7 @@ For reference, here's the full catalog:
     :onyx/ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
-    :onyx/consumption :sequential
+    :onyx/max-peers 1
     :onyx/batch-size batch-size
     :onyx/doc "Writes segments to a core.async channel"}])
 ```
@@ -182,7 +164,6 @@ You'll notice above that I mentioned we're using core.async for both input and o
 ```clojure
 (ns onyx-starter.core
   (:require [clojure.core.async :refer [chan >!! <!! close!]]
-            [onyx.peer.task-lifecycle-extensions :as l-ext]
             [onyx.plugin.core-async]
             [onyx.api]))
 
@@ -192,17 +173,38 @@ You'll notice above that I mentioned we're using core.async for both input and o
 
 (def question-output-chan (chan capacity))
 
-(defmethod l-ext/inject-lifecycle-resources :input
-  [_ _] {:core-async/in-chan input-chan})
+(defn inject-input-ch [event lifecycle]
+  {:core.async/chan input-chan})
 
-(defmethod l-ext/inject-lifecycle-resources :loud-output
-  [_ _] {:core-async/out-chan loud-output-chan})
+(defn inject-loud-output-ch [event lifecycle]
+  {:core.async/chan loud-output-chan})
 
-(defmethod l-ext/inject-lifecycle-resources :question-output
-  [_ _] {:core-async/out-chan question-output-chan})
+(defn inject-question-output-ch [event lifecycle]
+  {:core.async/chan question-output-chan})
+
+(def input-calls
+  {:lifecycle/before-task inject-input-ch})
+
+(def loud-output-calls
+  {:lifecycle/before-task inject-loud-output-ch})
+
+(def question-output-calls
+  {:lifecycle/before-task inject-question-output-ch})
+
+(def lifecycles
+  [{:lifecycle/task :in
+    :lifecycle/calls :onyx-starter.core/input-calls}
+   {:lifecycle/task :in
+    :lifecycle/calls :onyx.plugin.core-async/reader-calls}
+    lifecycle/task :loud-output
+    :lifecycle/calls :onyx-starter.core/loud-output-calls}
+   {:lifecycle/task :loud-output
+    :lifecycle/calls :onyx.plugin.core-async/writer-calls}
+    lifecycle/task :question-output
+    :lifecycle/calls :onyx-starter.core/question-output-calls}
+   {:lifecycle/task :question-output
+    :lifecycle/calls :onyx.plugin.core-async/writer-calls}])
 ```
-
-The core.async plugin expects `:core-async/in-chan` defined with a channel for input, and `:core-async/out-chan` for output.
 
 #### Submit the Job
 
@@ -223,30 +225,29 @@ Now that all of the above is defined, we can start up the Peers to execute the j
 
 (def id (java.util.UUID/randomUUID))
 
-;; Use the Round Robin job scheduler                                                                                                                        
-(def scheduler :onyx.job-scheduler/round-robin)
+;; Use the Balanced job scheduler
 
 (def env-config
-  {:hornetq/mode :vm
-   :hornetq.server/type :vm
-   :hornetq/server? true
-   :zookeeper/address "127.0.0.1:2186"
+  {:zookeeper/address "127.0.0.1:2188"
    :zookeeper/server? true
-   :zookeeper.server/port 2186
-   :onyx/id id
-   :onyx.peer/job-scheduler scheduler})
+   :zookeeper.server/port 2188
+   :onyx/id id})
 
 (def peer-config
-  {:hornetq/mode :vm
-   :zookeeper/address "127.0.0.1:2186"
+  {:zookeeper/address "127.0.0.1:2188"
    :onyx/id id
-   :onyx.peer/job-scheduler scheduler})
+   :onyx.peer/job-scheduler :onyx.job-scheduler/balanced
+   :onyx.messaging/impl :core.async
+   :onyx.messaging/bind-addr "localhost"})
 
-;; Start an in-memory ZooKeeper and HornetQ                                                                                                                 
+;; Start an in-memory ZooKeeper
 (def env (onyx.api/start-env env-config))
 
-;; Start the worker peers.                                                                                                                                  
-(def v-peers (onyx.api/start-peers! 1 peer-config))
+;; Shared resources for a set of peers
+(def peer-group (onyx.api/start-peer-group peer-config))
+
+;; Start the worker 7 peers for the 7 tasks
+(def v-peers (onyx.api/start-peers 7 peer-group))
 
 (onyx.api/submit-job peer-config
                      {:catalog catalog :workflow workflow
@@ -264,6 +265,8 @@ Now that all of the above is defined, we can start up the Peers to execute the j
 
 (doseq [v-peer v-peers]
   (onyx.api/shutdown-peer v-peer))
+
+(onyx.api/shutdown-peer-group peer-group)
 
 (onyx.api/shutdown-env env)
 ```
