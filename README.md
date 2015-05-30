@@ -59,7 +59,7 @@ After evaluating the line:
 `(def env (onyx.api/start-env env-config))`
 start the dashboard by:
 
-`ZOOKEEPER_ADDR="127.0.0.1:2186" java -jar onyx-dashboard-VERSION-NUMBER.jar`
+`ZOOKEEPER_ADDR="127.0.0.1:2188" java -jar onyx-dashboard-VERSION-NUMBER.jar`
 
 ## License
 
