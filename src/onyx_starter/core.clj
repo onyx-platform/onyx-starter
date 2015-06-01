@@ -133,13 +133,13 @@
     {:core.async/chan question-output-chan})
 
   (def input-calls
-    {:lifecycle/before-task inject-input-ch})
+    {:lifecycle/before-task-start inject-input-ch})
 
   (def loud-output-calls
-    {:lifecycle/before-task inject-loud-output-ch})
+    {:lifecycle/before-task-start inject-loud-output-ch})
 
   (def question-output-calls
-    {:lifecycle/before-task inject-question-output-ch})
+    {:lifecycle/before-task-start inject-question-output-ch})
 
   (def lifecycles
     [{:lifecycle/task :in
@@ -205,4 +205,4 @@
   (onyx.api/shutdown-peer-group peer-group)
 
   (onyx.api/shutdown-env env)
-)
+  )
