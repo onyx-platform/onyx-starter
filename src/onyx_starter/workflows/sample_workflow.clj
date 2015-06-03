@@ -10,5 +10,3 @@
    [:mixed-case :question]
    [:loud :loud-output]
    [:question :question-output]])
-
-

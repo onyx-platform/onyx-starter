@@ -18,7 +18,6 @@
 (def get-input-channel
   (memoize
    (fn [id]
-     (println "Get channel for" id)
      (chan input-channel-capacity))))
 
 (def get-output-channel
@@ -56,21 +55,8 @@
 (def out-calls
   {:lifecycle/before-task-start inject-out-ch})
 
-;;;; Lifecycle hook to debug segments by logging them to the console.
-(defn log-batch [event lifecycle]
-  (doseq [m (map :message (mapcat :leaves (:onyx.core/results event)))]
-    (prn "Logging segment: " m))
-  {})
-
-(def log-calls
-  {:lifecycle/after-batch log-batch})
-
 (defn build-lifecycles []
-  [#_{:lifecycle/task :question-output
-    :lifecycle/calls :onyx-starter.lifecycles.sample-lifecycle/log-calls}
-   #_{:lifecycle/task :loud-output
-    :lifecycle/calls :onyx-starter.lifecycles.sample-lifecycle/log-calls}
-   {:lifecycle/task :in
+  [{:lifecycle/task :in
     :core.async/id (java.util.UUID/randomUUID)
     :lifecycle/calls :onyx-starter.lifecycles.sample-lifecycle/in-calls}
    {:lifecycle/task :in
