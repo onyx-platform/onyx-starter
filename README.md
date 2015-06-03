@@ -12,9 +12,13 @@ A starter project to get your feet wet with Onyx `0.6.0-RC1`. Uses the core.asyn
 
 `git clone git@github.com:MichaelDrogalis/onyx-starter.git`
 
-##### Run the sample
+##### Run the sample job
 
-Evaluate it bit-by-bit in the repl. Tail `onyx.log` for Onyx output.
+Run the tests to see it work. Tail `onyx.log` for Onyx output.
+
+```text
+lein test
+```
 
 ##### Expected output
 
@@ -63,7 +67,7 @@ start the dashboard by:
 
 ## License
 
-Copyright © 2014 Michael Drogalis
+Copyright © 2015 Michael Drogalis
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
