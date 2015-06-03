@@ -10,7 +10,7 @@ Let's examine the workflow pictorially:
 
 ![Basic](http://i.imgur.com/uJEenZq.png)
 
-Notice that when we get to the interleaving of case case, we *fork* the computation into two distinct streams. This demonstrates a fundamental ability of Onyx to model directed, acyclic graphs as trees. Let's add another level of detail and show some actual data passing through each stage:
+Notice that when we get to the interleaving of case case, we *fork* the computation into two distinct streams. This demonstrates a fundamental ability of Onyx to model directed, acyclic graphs. Let's add another level of detail and show some actual data passing through each stage:
 
 ![Detailed](http://i.imgur.com/VMueGgh.png)
 
@@ -162,11 +162,6 @@ At some point, we need to actually specify what the functions that we named *are
 You'll notice above that I mentioned we're using core.async for both input and output. One of the things we need to do is get a *handle* to the core.async channels to put data into them and get data out of them. Onyx ships with a Task Lifecycle API, allowing you to start and stop stateful entities used in your program. Let's add those channels in:
 
 ```clojure
-(ns onyx-starter.core
-  (:require [clojure.core.async :refer [chan >!! <!! close!]]
-            [onyx.plugin.core-async]
-            [onyx.api]))
-
 (def input-chan (chan capacity))
 
 (def loud-output-chan (chan capacity))
@@ -183,25 +178,30 @@ You'll notice above that I mentioned we're using core.async for both input and o
   {:core.async/chan question-output-chan})
 
 (def input-calls
-  {:lifecycle/before-task inject-input-ch})
+  {:lifecycle/before-task-start inject-input-ch})
 
 (def loud-output-calls
-  {:lifecycle/before-task inject-loud-output-ch})
+  {:lifecycle/before-task-start inject-loud-output-ch})
 
 (def question-output-calls
-  {:lifecycle/before-task inject-question-output-ch})
+  {:lifecycle/before-task-start inject-question-output-ch})
 
-(def lifecycles
+(defn build-lifecycles []
   [{:lifecycle/task :in
-    :lifecycle/calls :onyx-starter.core/input-calls}
+    :core.async/id (java.util.UUID/randomUUID)
+    :lifecycle/calls :onyx-starter.lifecycles.sample-lifecycle/in-calls}
    {:lifecycle/task :in
     :lifecycle/calls :onyx.plugin.core-async/reader-calls}
-    lifecycle/task :loud-output
-    :lifecycle/calls :onyx-starter.core/loud-output-calls}
+   {:lifecycle/task :loud-output
+    :lifecycle/calls :onyx-starter.lifecycles.sample-lifecycle/out-calls
+    :core.async/id (java.util.UUID/randomUUID)
+    :lifecycle/doc "Lifecycle for writing to a core.async chan"}
    {:lifecycle/task :loud-output
     :lifecycle/calls :onyx.plugin.core-async/writer-calls}
-    lifecycle/task :question-output
-    :lifecycle/calls :onyx-starter.core/question-output-calls}
+   {:lifecycle/task :question-output
+    :lifecycle/calls :onyx-starter.lifecycles.sample-lifecycle/out-calls
+    :core.async/id (java.util.UUID/randomUUID)
+    :lifecycle/doc "Lifecycle for writing to a core.async chan"}
    {:lifecycle/task :question-output
     :lifecycle/calls :onyx.plugin.core-async/writer-calls}])
 ```
@@ -211,64 +211,39 @@ You'll notice above that I mentioned we're using core.async for both input and o
 Now that all of the above is defined, we can start up the Peers to execute the job:
 
 ```clojure
-(def input-segments
-  [{:sentence "Hey there user"}
-   {:sentence "It's really nice outside"}
-   {:sentence "I live in Redmond"}
-   :done])
+(let [dev-cfg (-> "dev-peer-config.edn" resource slurp read-string)
+      peer-config (assoc dev-cfg :onyx/id (:onyx-id dev-env))
+      dev-catalog (build-catalog 10) 
+      dev-lifecycles (build-lifecycles)]
+  ;; Automatically pipes the data structure into the channel, attaching :done at the end
+  (sl/bind-inputs! dev-lifecycles {:in dev-inputs/input-segments})
+  (let [job {:workflow workflow
+             :catalog dev-catalog
+             :lifecycles dev-lifecycles
+             :flow-conditions sf/flow-conditions
+             :task-scheduler :onyx.task-scheduler/balanced}]
+    (onyx.api/submit-job peer-config job)
+    ;; Automatically grab output from the stubbed core.async channels,
+    ;; returning a vector of the results with data structures representing
+    ;; the output.
+    (sl/collect-outputs! dev-lifecycles [:loud-output :question-output])))
+```
 
-;;; Put the data onto the input chan       
-(doseq [segment input-segments]
-  (>!! input-chan segment))
+We use some helper functions in the test to bind the inputs and collect the outputs:
 
-(close! input-chan)
-
-(def id (java.util.UUID/randomUUID))
-
-;; Use the Balanced job scheduler
-
-(def env-config
-  {:zookeeper/address "127.0.0.1:2188"
-   :zookeeper/server? true
-   :zookeeper.server/port 2188
-   :onyx/id id})
-
-(def peer-config
-  {:zookeeper/address "127.0.0.1:2188"
-   :onyx/id id
-   :onyx.peer/job-scheduler :onyx.job-scheduler/balanced
-   :onyx.messaging/impl :core.async
-   :onyx.messaging/bind-addr "localhost"})
-
-;; Start an in-memory ZooKeeper
-(def env (onyx.api/start-env env-config))
-
-;; Shared resources for a set of peers
-(def peer-group (onyx.api/start-peer-group peer-config))
-
-;; Start the worker 7 peers for the 7 tasks
-(def v-peers (onyx.api/start-peers 7 peer-group))
-
-(onyx.api/submit-job peer-config
-                     {:catalog catalog :workflow workflow
-                      :task-scheduler :onyx.task-scheduler/round-robin})
-
-(def loud-results (onyx.plugin.core-async/take-segments! loud-output-chan))
-
-(def question-results (onyx.plugin.core-async/take-segments! question-output-chan))
-
-(clojure.pprint/pprint loud-results)
-
-(println)
-
-(clojure.pprint/pprint question-results)
-
-(doseq [v-peer v-peers]
-  (onyx.api/shutdown-peer v-peer))
-
-(onyx.api/shutdown-peer-group peer-group)
-
-(onyx.api/shutdown-env env)
+```clojure
+(deftest test-sample-dev-job
+  ;; 8 peers for 8 distinct tasks in the workflow
+  (let [dev-env (component/start (onyx-dev-env 8))]
+    (try 
+      (let [[loud-out question-out] (submit-sample/submit-job dev-env)]
+        (clojure.pprint/pprint loud-out)
+        (println)
+        (clojure.pprint/pprint question-out)
+        (is (= 12 (count question-out)))
+        (is (= 12 (count loud-out))))
+      (finally 
+        (component/stop dev-env)))))
 ```
 
 And the output is:
@@ -304,7 +279,7 @@ And the output is:
 A few notes:
 - The last piece of input we sent through is not a segment, but `:done`! It's called the Sentinel. This is a specially recognized value in Onyx which *completes* the current running task. This value is used to switch transparently between batch and streaming modes.
 - The `id` on the Peers in a distributed environment *must* match up for them to work together. This is how they find each other when there are multiple deployments.
-- We start **1** virtual peer, which is a unit of local parallelism in Onyx. One virtual peer is usually fine for development. One virtual peer executes one task, so if you're running a streaming job, you need at least n virtual peers for n running tasks.
+- We start **8** virtual peers, which is a unit of local parallelism in Onyx. You need at least one virtual peer per task for your job to start.
 - The sentinel is helpfully propagated downstream, so you know when you've got to the end of an output stream.
 
 #### Conclusion
