@@ -23,31 +23,33 @@ lein test
 ##### Expected output
 
 ```clojure
-[{:word "HeY!"}
- {:word "ThErE!"}
- {:word "UsEr!"}
- {:word "It's!"}
- {:word "ReAlLy!"}
- {:word "NiCe!"}
- {:word "OuTsIdE!"}
- {:word "I!"}
- {:word "LiVe!"}
- {:word "In!"}
- {:word "ReDmOnD!"}
- :done]
+{:loud-output
+ [{:word "HeY!"}
+  {:word "ThErE!"}
+  {:word "UsEr!"}
+  {:word "It's!"}
+  {:word "ReAlLy!"}
+  {:word "NiCe!"}
+  {:word "OuTsIdE!"}
+  {:word "I!"}
+  {:word "LiVe!"}
+  {:word "In!"}
+  {:word "ReDmOnD!"}
+  :done]
 
-[{:word "HeY?"}
- {:word "ThErE?"}
- {:word "UsEr?"}
- {:word "It's?"}
- {:word "ReAlLy?"}
- {:word "NiCe?"}
- {:word "OuTsIdE?"}
- {:word "I?"}
- {:word "LiVe?"}
- {:word "In?"}
- {:word "ReDmOnD?"}
- :done]
+ :question-output
+ [{:word "HeY?"}
+  {:word "ThErE?"}
+  {:word "UsEr?"}
+  {:word "It's?"}
+  {:word "ReAlLy?"}
+  {:word "NiCe?"}
+  {:word "OuTsIdE?"}
+  {:word "I?"}
+  {:word "LiVe?"}
+  {:word "In?"}
+  {:word "ReDmOnD?"}
+  :done]
 ```
 
 ##### Dashboard

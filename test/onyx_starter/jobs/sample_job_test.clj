@@ -10,11 +10,11 @@
   ;; 8 peers for 8 distinct tasks in the workflow
   (let [dev-env (component/start (onyx-dev-env 8))]
     (try 
-      (let [[loud-out question-out] (submit-sample/submit-job dev-env)]
-        (clojure.pprint/pprint loud-out)
+      (let [{:keys [loud-output question-output]} (submit-sample/submit-job dev-env)]
+        (clojure.pprint/pprint loud-output)
         (println)
-        (clojure.pprint/pprint question-out)
-        (is (= 12 (count question-out)))
-        (is (= 12 (count loud-out))))
+        (clojure.pprint/pprint question-output)
+        (is (= 12 (count question-output)))
+        (is (= 12 (count loud-output))))
       (finally 
         (component/stop dev-env)))))
