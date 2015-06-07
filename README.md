@@ -14,11 +14,21 @@ A starter project to get your feet wet with Onyx `0.6.0-RC1`. Uses the core.asyn
 
 ##### Run the sample job
 
-Run the tests to see it work. Tail `onyx.log` for Onyx output.
+Run the tests or use the repl to see it work. Tail `onyx.log` for Onyx output.
 
+###### Tests
 ```text
 lein test
 ```
+###### REPL
+```clojure
+(user/go)
+(require 'onyx-starter.launcher.submit-sample-job)
+(onyx-starter.launcher.submit-sample-job/submit-job user/system)
+```
+
+If you wish to make any code changes, call `(user/reset)` to refresh your
+environment before resubmitting the job.
 
 ##### Expected output
 
