@@ -1,6 +1,6 @@
 # onyx-starter
 
-A starter project to get your feet wet with Onyx `0.7.0`. Uses the core.async plugin for both input and output. Requires no external dependencies.
+A starter project to get your feet wet with Onyx `0.7.4`. Uses the core.async plugin for both input and output. Requires no external dependencies.
 
 ## Walk Through
 
@@ -79,7 +79,7 @@ start the dashboard by:
 
 ## License
 
-Copyright © 2015 Michael Drogalis
+Copyright © 2015 Distributed Masonry LLC
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
