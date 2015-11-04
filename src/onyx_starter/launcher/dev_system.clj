@@ -34,5 +34,3 @@
 
 (defn onyx-dev-env [n-peers]
   (map->OnyxDevEnv {:n-peers n-peers}))
-
-
