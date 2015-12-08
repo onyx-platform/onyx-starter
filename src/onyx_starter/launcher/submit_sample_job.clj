@@ -1,6 +1,5 @@
 (ns onyx-starter.launcher.submit-sample-job
-  (:require [clojure.core.async :refer [>!!]]
-            [com.stuartsierra.component :as component]
+  (:require [com.stuartsierra.component :as component]
             [clojure.java.io :refer [resource]]
             [onyx-starter.launcher.dev-system :refer [onyx-dev-env]]
             [onyx-starter.workflows.sample-workflow :refer [workflow]]
