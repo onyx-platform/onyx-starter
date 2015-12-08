@@ -2,7 +2,7 @@ FROM ubuntu:14.04.2
 MAINTAINER Michael Drogalis <mjd3089@rit.edu>
 
 # Add a repo where OpenJDK can be found.
-RUN apt-get install -y software-properties-common
+RUN apt-get install -y software-properties-common && apt-get clean
 RUN add-apt-repository -y ppa:webupd8team/java
 RUN apt-get update
 
