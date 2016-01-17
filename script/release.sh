@@ -27,11 +27,11 @@ lein update-dependency org.onyxplatform/onyx $new_core_version
 sed -i.bak "s/$current_version/$new_core_version/g" README.md
 git add README.md project.clj
 
-# git commit -m "Release version $new_plugin_version."
-# git push origin master
+git commit -m "Upgrade to $new_core_version."
+git push origin master
 
-# # Merge artifacts into release branch.
-# git checkout -b $release_branch || git checkout $release_branch
-# git pull || true
-# git merge -m "Merge branch 'master' into $release_branch" master -X theirs
-# git push -u origin $release_branch
+# Merge artifacts into release branch.
+git checkout -b $release_branch || git checkout $release_branch
+git pull || true
+git merge -m "Merge branch 'master' into $release_branch" master -X theirs
+git push -u origin $release_branch
