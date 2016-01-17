@@ -6,4 +6,5 @@
                  [org.onyxplatform/onyx "0.8.4"]
                  [com.stuartsierra/component "0.2.3"]]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]]
+                   :plugins [[lein-update-dependency "0.1.2"]]
                    :source-paths ["env/dev" "src"]}})
