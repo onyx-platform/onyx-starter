@@ -47,7 +47,7 @@ Now that we've outlined the flow of data for our program in the workflow, let's 
  :onyx/doc "Reads segments from a core.async channel"}
 ```
 
-The first entry in the catalog specifies the input for the workflow. Here, we make use of the core.async plugin for Onyx to make local development convenient. `ident`, `type`, and `medium` are specified by the plugin and should be copied directly. `consumption` and `batch-size` are performance tuning parameters. `name` corresponds to `:in` in the workflow that we specified above.
+The first entry in the catalog specifies the input for the workflow. Here, we make use of the core.async plugin for Onyx to make local development convenient. `ident`, `type`, and `medium` are specified by the plugin and should be copied directly. `max-peers` creates an upper bound on the number of peers, and it is 1 here to constrain the task to a single peer. `batch-size` is a performance tuning parameter. `name` corresponds to `:in` in the workflow that we specified above.
 
 ##### `split-by-spaces`
 
