@@ -1,6 +1,6 @@
 # onyx-starter
 
-A starter project to get your feet wet with Onyx `0.8.0`. Uses the core.async plugin for both input and output. Requires no external dependencies.
+A starter project to get your feet wet with Onyx `0.8.4`. Uses the core.async plugin for both input and output. Requires no external dependencies.
 
 ## Walk Through
 
@@ -10,7 +10,7 @@ A starter project to get your feet wet with Onyx `0.8.0`. Uses the core.async pl
 
 ##### Clone the repo
 
-`git clone git@github.com:MichaelDrogalis/onyx-starter.git`
+`git clone git@github.com:onyx-platform/onyx-starter.git`
 
 ##### Run the sample job
 
