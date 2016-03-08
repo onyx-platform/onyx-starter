@@ -39,7 +39,7 @@ Now that we've outlined the flow of data for our program in the workflow, let's 
 
 ```clojure
 {:onyx/name :in
- :onyx/ident :core.async/read-from-chan
+ :onyx/tenancy-ident :core.async/read-from-chan
  :onyx/type :input
  :onyx/medium :core.async
  :onyx/max-peers 1
@@ -64,7 +64,7 @@ Now we turn our attention to the `split-by-spaces` function. Again, the name cor
 
 ```clojure
 {:onyx/name :loud-output
- :onyx/ident :core.async/write-to-chan
+ :onyx/tenancy-ident :core.async/write-to-chan
  :onyx/type :output
  :onyx/medium :core.async
  :onyx/max-peers 1
@@ -81,7 +81,7 @@ For reference, here's the full catalog:
 ```clojure
 (def catalog
   [{:onyx/name :in
-    :onyx/ident :core.async/read-from-chan
+    :onyx/tenancy-ident :core.async/read-from-chan
     :onyx/type :input
     :onyx/medium :core.async
     :onyx/max-peers 1
@@ -109,7 +109,7 @@ For reference, here's the full catalog:
     :onyx/batch-size batch-size}
 
    {:onyx/name :loud-output
-    :onyx/ident :core.async/write-to-chan
+    :onyx/tenancy-ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
     :onyx/max-peers 1
@@ -117,7 +117,7 @@ For reference, here's the full catalog:
     :onyx/doc "Writes segments to a core.async channel"}
 
    {:onyx/name :question-output
-    :onyx/ident :core.async/write-to-chan
+    :onyx/tenancy-ident :core.async/write-to-chan
     :onyx/type :output
     :onyx/medium :core.async
     :onyx/max-peers 1
@@ -212,7 +212,7 @@ Now that all of the above is defined, we can start up the Peers to execute the j
 
 ```clojure
 (let [dev-cfg (-> "dev-peer-config.edn" resource slurp read-string)
-      peer-config (assoc dev-cfg :onyx/id (:onyx-id dev-env))
+      peer-config (assoc dev-cfg :onyx/tenancy-id (:onyx-id dev-env))
       dev-catalog (build-catalog 10) 
       dev-lifecycles (build-lifecycles)]
   ;; Automatically pipes the data structure into the channel, attaching :done at the end

@@ -12,9 +12,9 @@
     (println "Starting Onyx development environment")
     (let [onyx-id (java.util.UUID/randomUUID)
           env-config (assoc (-> "env-config.edn" resource slurp read-string)
-                            :onyx/id onyx-id)
+                            :onyx/tenancy-id onyx-id)
           peer-config (assoc (-> "dev-peer-config.edn"
-                                 resource slurp read-string) :onyx/id onyx-id)
+                                 resource slurp read-string) :onyx/tenancy-id onyx-id)
           env (onyx.api/start-env env-config)
           peer-group (onyx.api/start-peer-group peer-config)
           peers (onyx.api/start-peers n-peers peer-group)]

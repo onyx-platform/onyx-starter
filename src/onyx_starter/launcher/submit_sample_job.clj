@@ -12,7 +12,7 @@
 
 (defn submit-job [dev-env] 
   (let [dev-cfg (-> "dev-peer-config.edn" resource slurp read-string)
-        peer-config (assoc dev-cfg :onyx/id (:onyx-id dev-env))
+        peer-config (assoc dev-cfg :onyx/tenancy-id (:onyx-id dev-env))
         dev-catalog (build-catalog 10 50) 
         dev-lifecycles (build-lifecycles)]
     ;; Automatically pipes the data structure into the channel, attaching :done at the end
