@@ -19,7 +19,7 @@ current_version=`lein pprint :version | sed s/\"//g`
 # Update to release version.
 git checkout master
 git stash
-git pull
+git pull origin master
 
 lein set-version $new_core_version
 lein update-dependency org.onyxplatform/onyx $new_core_version
@@ -32,6 +32,6 @@ git push origin master
 
 # Merge artifacts into release branch.
 git checkout -b $release_branch || git checkout $release_branch
-git pull || true
+git pull origin $release_branch || true
 git merge -m "Merge branch 'master' into $release_branch" master -X theirs
 git push -u origin $release_branch
