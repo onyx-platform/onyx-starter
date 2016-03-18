@@ -8,5 +8,6 @@
                  [com.stuartsierra/component "0.2.3"]]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]]
                    :plugins [[lein-update-dependency "0.1.2"]
+                             [lein-pprint "1.1.1"]
                              [lein-set-version "0.4.1"]]
                    :source-paths ["env/dev" "src"]}})
