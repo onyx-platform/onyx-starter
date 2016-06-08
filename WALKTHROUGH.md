@@ -58,7 +58,7 @@ The first entry in the catalog specifies the input for the workflow. Here, we ma
  :onyx/batch-size batch-size}
 ```
 
-Now we turn our attention to the `split-by-spaces` function. Again, the name corresponds to that which is used in the workflow. This time, we specify the `type` as `:function`. This indicates that this entry is a function that takes a segment and returns either a segment or a seq of segments. Simple as that. It's concrete function is bound through `:onyx/fn` to a fully qualified namespace. Make sure the file containing this function is required onto the classpath before its executed!
+Now we turn our attention to the `split-by-spaces` function. Again, the name corresponds to that which is used in the workflow. This time, we specify the `type` as `:function`. This indicates that this entry is a function that takes a segment and returns either a segment or a seq of segments. Simple as that. Its concrete function is bound through `:onyx/fn` to a fully qualified namespace. Make sure the file containing this function is required onto the classpath before it's executed!
 
 ##### `loud-output`
 
