@@ -1,6 +1,6 @@
 # onyx-starter
 
-A starter project to get your feet wet with Onyx `0.9.7-alpha1`. Uses the core.async plugin for both input and output. Requires no external dependencies.
+A starter project to get your feet wet with Onyx `0.9.7-alpha2`. Uses the core.async plugin for both input and output. Requires no external dependencies.
 
 ## Walk Through
 
