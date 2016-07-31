@@ -7,8 +7,8 @@
             [onyx.api]))
 
 (deftest test-sample-dev-job
-  ;; 8 peers for 8 distinct tasks in the workflow
-  (let [dev-env (component/start (onyx-dev-env 8))]
+  ;; 7 peers for 7 distinct tasks in the workflow
+  (let [dev-env (component/start (onyx-dev-env 7))]
     (try 
       (let [{:keys [loud-output question-output]} (submit-sample/submit-job dev-env)]
         (clojure.pprint/pprint loud-output)
