@@ -1,4 +1,4 @@
-(defproject onyx-starter "0.9.10-beta1"
+(defproject onyx-starter "0.9.10-beta3"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
