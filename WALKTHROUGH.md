@@ -17,10 +17,10 @@ Notice that when we get to the interleaving of case case, we *fork* the computat
 A few things to note:
 - This diagram shows data *as it's leaving* each transformation.
 - Onyx only allows *maps* to be ingested and emitted. These are called *segments*.
-- Onyx multiple segments to be emitted in a vector, as seen in the `split by spaces` transformation.
+- Onyx encloses multiple segments to be emitted in a vector, as seen in the `split by spaces` transformation.
 - After `split by spaces`, the diagram only shows `{:word "really"}` moving through the workflow. This is simply for saving space. All words move through the rest of the workflow in the same manner.
 
-All of this is expressed in Clojure as the following form:
+The DAG is expressed in Clojure as:
 
 ```clojure
 [[:in :split-by-spaces]
