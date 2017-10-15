@@ -35,17 +35,17 @@
   (doseq [[task segments] mapping]
     (let [in-ch (get-input-channel (channel-id-for lifecycles task))]
       (doseq [segment segments]
-        (>!! in-ch segment))
-      (>!! in-ch :done))))
+        (>!! in-ch segment)))))
 
 (defn collect-outputs! [lifecycles output-tasks]
   (->> output-tasks
        (map #(get-output-channel (channel-id-for lifecycles %)))
-       (map take-segments!)
+       (map #(take-segments! % 5000))
        (zipmap output-tasks)))
 
 (defn inject-in-ch [event lifecycle]
-  {:core.async/chan (get-input-channel (:core.async/id lifecycle))})
+  {:core.async/buffer (atom {})
+   :core.async/chan (get-input-channel (:core.async/id lifecycle))})
 
 (defn inject-out-ch [event lifecycle]
   {:core.async/chan (get-output-channel (:core.async/id lifecycle))})

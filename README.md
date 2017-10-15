@@ -44,8 +44,7 @@ environment before resubmitting the job.
   {:word "I!"}
   {:word "LiVe!"}
   {:word "In!"}
-  {:word "ReDmOnD!"}
-  :done]
+  {:word "ReDmOnD!"}]
 
  :question-output
  [{:word "HeY?"}
@@ -58,8 +57,7 @@ environment before resubmitting the job.
   {:word "I?"}
   {:word "LiVe?"}
   {:word "In?"}
-  {:word "ReDmOnD?"}
-  :done]
+  {:word "ReDmOnD?"}]
 ```
 
 ##### Dashboard

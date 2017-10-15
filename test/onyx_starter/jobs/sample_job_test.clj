@@ -14,7 +14,7 @@
         (clojure.pprint/pprint loud-output)
         (println)
         (clojure.pprint/pprint question-output)
-        (is (= 12 (count question-output)))
-        (is (= 12 (count loud-output))))
+        (is (= 11 (count question-output)))
+        (is (= 11 (count loud-output))))
       (finally 
         (component/stop dev-env)))))

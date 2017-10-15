@@ -15,7 +15,7 @@
         peer-config (assoc dev-cfg :onyx/tenancy-id (:onyx-id dev-env))
         dev-catalog (build-catalog 10 50) 
         dev-lifecycles (build-lifecycles)]
-    ;; Automatically pipes the data structure into the channel, attaching :done at the end
+    ;; Automatically pipes the data structure into the channel
     (sl/bind-inputs! dev-lifecycles {:in dev-inputs/input-segments})
     (let [job {:workflow workflow
                :catalog dev-catalog
