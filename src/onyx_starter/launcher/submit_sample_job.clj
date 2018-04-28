@@ -21,8 +21,11 @@
                :catalog dev-catalog
                :lifecycles dev-lifecycles
                :flow-conditions sf/flow-conditions
-               :task-scheduler :onyx.task-scheduler/balanced}]
-      (onyx.api/submit-job peer-config job)
+               :task-scheduler :onyx.task-scheduler/balanced}
+          ret (onyx.api/submit-job peer-config job)]
+      (when-not (:success? ret)
+        (throw (ex-info "Job submission was not successful." ret)))
+
       ;; Automatically grab output from the stubbed core.async channels,
       ;; returning a vector of the results with data structures representing
       ;; the output.
