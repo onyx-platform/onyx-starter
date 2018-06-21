@@ -17,15 +17,11 @@
   (let [distinct-workflows (count-distinct-tasks workflows/workflow)
         dev-env            (component/start (onyx-dev-env distinct-workflows))]
     (try
-      (let [{:keys [loud-output question-output period-output]} (submit-sample/submit-job dev-env)]
+      (let [{:keys [loud-output question-output]} (submit-sample/submit-job dev-env)]
         (clojure.pprint/pprint loud-output)
         (println)
         (clojure.pprint/pprint question-output)
-        (println)
-        (clojure.pprint/pprint period-output)
         (is (= 11 (count question-output)))
-        (is (= 11 (count loud-output)))
-        (is (= 11 (count period-output)))
-        )
+        (is (= 11 (count loud-output))))
       (finally
         (component/stop dev-env)))))
